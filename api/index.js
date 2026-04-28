@@ -12,64 +12,55 @@ const BLOCKED_HEADERS = new Set([
   "t" + "r" + "a" + "i" + "l" + "e" + "r",
   "t" + "r" + "a" + "n" + "s" + "f" + "e" + "r" + "-" + "e" + "n" + "c" + "o" + "d" + "i" + "n" + "g",
   "u" + "p" + "g" + "r" + "a" + "d" + "e",
-  "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d",
-  ("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "h" + "o" + "s" + "t"),
-  ("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "p" + "r" + "o" + "t" + "o"),
-  ("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "p" + "o" + "r" + "t")
+  "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d"
 ]);
 
-export default async function handler(request) {
+export default async function handler(req) {
   if (!API_CONFIG) {
-    return new Response(("S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e"), { status: 503 });
+    return new Response("S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e", { status: 503 });
   }
 
   try {
-    const urlPath = request.url.indexOf("/", 8);
-    const destination = urlPath === -1 
-      ? API_CONFIG + "/" 
-      : API_CONFIG + request.url.slice(urlPath);
+    const pathPart = req.url.indexOf("/", 8);
+    const targetUrl = pathPart === -1 ? API_CONFIG + "/" : API_CONFIG + req.url.slice(pathPart);
 
-    const cleanHeaders = new Headers();
-    let originalIp = null;
+    const newHeaders = new Headers();
+    let ipAddress = null;
     
-    for (const [headerName, headerValue] of request.headers) {
-      if (BLOCKED_HEADERS.has(headerName)) continue;
-      if (headerName.startsWith("x" + "-" + "v" + "e" + "r" + "c" + "e" + "l")) continue;
+    for (const [key, val] of req.headers) {
+      if (BLOCKED_HEADERS.has(key)) continue;
+      if (key.indexOf("x-vercel") === 0) continue;
       
-      if (headerName === ("x" + "-" + "r" + "e" + "a" + "l" + "-" + "i" + "p")) {
-        originalIp = headerValue;
+      if (key === "x-real-ip") {
+        ipAddress = val;
         continue;
       }
       
-      if (headerName === ("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r")) {
-        if (!originalIp) originalIp = headerValue;
+      if (key === "x-forwarded-for") {
+        if (!ipAddress) ipAddress = val;
         continue;
       }
       
-      cleanHeaders.set(headerName, headerValue);
+      newHeaders.set(key, val);
     }
     
-    if (originalIp) {
-      cleanHeaders.set(("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r"), originalIp);
+    if (ipAddress) {
+      newHeaders.set("x-forwarded-for", ipAddress);
     }
 
-    const requestMethod = request.method;
-    const hasRequestBody = requestMethod !== "G" + "E" + "T" && requestMethod !== "H" + "E" + "A" + "D";
+    const methodType = req.method;
+    const hasContent = methodType !== "GET" && methodType !== "HEAD";
 
-    const fetchOptions = {};
-    fetchOptions["m" + "e" + "t" + "h" + "o" + "d"] = requestMethod;
-    fetchOptions["h" + "e" + "a" + "d" + "e" + "r" + "s"] = cleanHeaders;
-    fetchOptions["b" + "o" + "d" + "y"] = hasRequestBody ? request.body : undefined;
-    fetchOptions["d" + "u" + "p" + "l" + "e" + "x"] = "half";
-    fetchOptions["r" + "e" + "d" + "i" + "r" + "e" + "c" + "t"] = "manual";
-
-    const response = await fetch(destination, fetchOptions);
-    return response;
-    
-  } catch (error) {
-    return new Response(("S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r"), { 
-      status: 500,
-      headers: { ("C" + "o" + "n" + "t" + "e" + "n" + "t" + "-" + "T" + "y" + "p" + "e"): ("t" + "e" + "x" + "t" + "/" + "p" + "l" + "a" + "i" + "n") }
+    const resp = await fetch(targetUrl, {
+      method: methodType,
+      headers: newHeaders,
+      body: hasContent ? req.body : undefined,
+      redirect: "manual"
     });
+    
+    return resp;
+    
+  } catch (err) {
+    return new Response("S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r", { status: 500 });
   }
 }
