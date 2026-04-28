@@ -1,48 +1,62 @@
-ZXhwb3J0JTIwY29uc3QlMjBjb25maWclMjAlM0QlMjAlN0IlMjBydW50aW1lJTNBJTIwJTIyZWRn
-ZSUyMiUyMCU3RCUzQiUwQSUwQWNvbnN0JTIwVEFSR0VUX0JBU0UlMjAlM0QlMjAocHJvY2Vzcy5l
-bnYuVEFSR0VUX0RPTUFJTiUyMCU3QyU3QyUyMCUyMiUyMikucmVwbGFjZSglMkYlNUMlMkYlMjQl
-MkYlMkMlMjAlMjIlMjIpJTNCJTBBJTBBY29uc3QlMjBTVFJJUF9IRUFERVJTJTIwJTNEJTIwbmV3
-JTIwU2V0KCU1QiUwQSUyMCUyMCUyMmhvc3QlMjIlMkMlMEElMjAlMjAlMjJjb25uZWN0aW9uJTIy
-JTJDJTBBJTIwJTIwJTIya2VlcC1hbGl2ZSUyMiUyQyUwQSUyMCUyMCUyMnByb3h5LWF1dGhlbnRp
-Y2F0ZSUyMiUyQyUwQSUyMCUyMCUyMnByb3h5LWF1dGhvcml6YXRpb24lMjIlMkMlMEElMjAlMjAl
-MjJ0ZSUyMiUyQyUwQSUyMCUyMCUyMnRyYWlsZXIlMjIlMkMlMEElMjAlMjAlMjJ0cmFuc2Zlci1l
-bmNvZGluZyUyMiUyQyUwQSUyMCUyMCUyMnVwZ3JhZGUlMjIlMkMlMEElMjAlMjAlMjJmb3J3YXJk
-ZWQlMjIlMkMlMEElMjAlMjAlMjJ4LWZvcndhcmRlZC1ob3N0JTIyJTJDJTBBJTIwJTIwJTIyeC1m
-b3J3YXJkZWQtcHJvdG8lMjIlMkMlMEElMjAlMjAlMjJ4LWZvcndhcmRlZC1wb3J0JTIyJTJDJTBB
-JTVEKSUzQiUwQSUwQWV4cG9ydCUyMGRlZmF1bHQlMjBhc3luYyUyMGZ1bmN0aW9uJTIwaGFuZGxl
-cihyZXEpJTIwJTdCJTBBJTIwJTIwaWYlMjAoIVRBUkdFVF9CQVNFKSUyMCU3QiUwQSUyMCUyMCUy
-MCUyMHJldHVybiUyMG5ldyUyMFJlc3BvbnNlKCUyMk1pc2NvbmZpZ3VyZWQlM0ElMjBUQVJHRVRf
-RE9NQUlOJTIwaXMlMjBub3QlMjBzZXQlMjIlMkMlMjAlN0IlMjBzdGF0dXMlM0ElMjA1MDAlMjAl
-N0QpJTNCJTBBJTIwJTIwJTdEJTBBJTBBJTIwJTIwdHJ5JTIwJTdCJTBBJTIwJTIwJTIwJTIwY29u
-c3QlMjBwYXRoU3RhcnQlMjAlM0QlMjByZXEudXJsLmluZGV4T2YoJTIyJTJGJTIyJTJDJTIwOCkl
-M0IlMEElMjAlMjAlMjAlMjBjb25zdCUyMHRhcmdldFVybCUyMCUzRCUwQSUyMCUyMCUyMCUyMCUy
-MCUyMHBhdGhTdGFydCUyMCUzRCUzRCUzRCUyMC0xJTIwJTNGJTIwVEFSR0VUX0JBU0UlMjAlMkIl
-MjAlMjIlMkYlMjIlMjAlM0ElMjBUQVJHRVRfQkFTRSUyMCUyQiUyMHJlcS51cmwuc2xpY2UocGF0
-aFN0YXJ0KSUzQiUwQSUwQSUyMCUyMCUyMCUyMGNvbnN0JTIwb3V0JTIwJTNEJTIwbmV3JTIwSGVh
-ZGVycygpJTNCJTBBJTIwJTIwJTIwJTIwbGV0JTIwY2xpZW50SXAlMjAlM0QlMjBudWxsJTNCJTBB
-JTIwJTIwJTIwJTIwZm9yJTIwKGNvbnN0JTIwJTVCayUyQyUyMHYlNUQlMjBvZiUyMHJlcS5oZWFk
-ZXJzKSUyMCU3QiUwQSUyMCUyMCUyMCUyMCUyMCUyMGlmJTIwKFNUUklQX0hFQURFUlMuaGFzKGsp
-KSUyMGNvbnRpbnVlJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwaWYlMjAoay5zdGFydHNXaXRoKCUy
-MngtdmVyY2VsLSUyMikpJTIwY29udGludWUlM0IlMEElMjAlMjAlMjAlMjAlMjAlMjBpZiUyMChr
-JTIwJTNEJTNEJTNEJTIwJTIyeC1yZWFsLWlwJTIyKSUyMCU3QiUwQSUyMCUyMCUyMCUyMCUyMCUy
-MCUyMCUyMGNsaWVudElwJTIwJTNEJTIwdiUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMGNv
-bnRpbnVlJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTdEJTBBJTIwJTIwJTIwJTIwJTIwJTIwaWYl
-MjAoayUyMCUzRCUzRCUzRCUyMCUyMngtZm9yd2FyZGVkLWZvciUyMiklMjAlN0IlMEElMjAlMjAl
-MjAlMjAlMjAlMjAlMjAlMjBpZiUyMCghY2xpZW50SXApJTIwY2xpZW50SXAlMjAlM0QlMjB2JTNC
-JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwY29udGludWUlM0IlMEElMjAlMjAlMjAlMjAlMjAl
-MjAlN0QlMEElMjAlMjAlMjAlMjAlMjAlMjBvdXQuc2V0KGslMkMlMjB2KSUzQiUwQSUyMCUyMCUy
-MCUyMCU3RCUwQSUyMCUyMCUyMCUyMGlmJTIwKGNsaWVudElwKSUyMG91dC5zZXQoJTIyeC1mb3J3
-YXJkZWQtZm9yJTIyJTJDJTIwY2xpZW50SXApJTNCJTBBJTBBJTIwJTIwJTIwJTIwY29uc3QlMjBt
-ZXRob2QlMjAlM0QlMjByZXEubWV0aG9kJTNCJTBBJTIwJTIwJTIwJTIwY29uc3QlMjBoYXNCb2R5
-JTIwJTNEJTIwbWV0aG9kJTIwISUzRCUzRCUyMCUyMkdFVCUyMiUyMCUyNiUyNiUyMG1ldGhvZCUy
-MCElM0QlM0QlMjAlMjJIRUFEJTIyJTNCJTBBJTBBJTIwJTIwJTIwJTIwcmV0dXJuJTIwYXdhaXQl
-MjBmZXRjaCh0YXJnZXRVcmwlMkMlMjAlN0IlMEElMjAlMjAlMjAlMjAlMjAlMjBtZXRob2QlMkMl
-MEElMjAlMjAlMjAlMjAlMjAlMjBoZWFkZXJzJTNBJTIwb3V0JTJDJTBBJTIwJTIwJTIwJTIwJTIw
-JTIwYm9keSUzQSUyMGhhc0JvZHklMjAlM0YlMjByZXEuYm9keSUyMCUzQSUyMHVuZGVmaW5lZCUy
-QyUwQSUyMCUyMCUyMCUyMCUyMCUyMGR1cGxleCUzQSUyMCUyMmhhbGYlMjIlMkMlMEElMjAlMjAl
-MjAlMjAlMjAlMjByZWRpcmVjdCUzQSUyMCUyMm1hbnVhbCUyMiUyQyUwQSUyMCUyMCUyMCUyMCU3
-RCklM0IlMEElMjAlMjAlN0QlMjBjYXRjaCUyMChlcnIpJTIwJTdCJTBBJTIwJTIwJTIwJTIwY29u
-c29sZS5lcnJvciglMjJyZWxheSUyMGVycm9yJTNBJTIyJTJDJTIwZXJyKSUzQiUwQSUyMCUyMCUy
-MCUyMHJldHVybiUyMG5ldyUyMFJlc3BvbnNlKCUyMkJhZCUyMEdhdGV3YXklM0ElMjBUdW5uZWwl
-MjBGYWlsZWQlMjIlMkMlMjAlN0IlMjBzdGF0dXMlM0ElMjA1MDIlMjAlN0QpJTNCJTBBJTIwJTIw
-JTdEJTBBJTdE
+export const config = { runtime: "edge" };
+
+const TARGET_BASE = (process.env.TARGET1_DOMAIN1 || "").replace(/\/$/, "");
+
+const STRIP_HEADERS = new Set([
+  "host",
+  "connection",
+  "keep-alive",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+  "forwarded",
+  "x-forwarded-host",
+  "x-forwarded-proto",
+  "x-forwarded-port",
+]);
+
+export default async function handler(req) {
+  if (!TARGET_BASE) {
+    return new Response("Misconfigured: TARGET1_DOMAIN1 is not set", { status: 500 });
+  }
+
+  try {
+    const pathStart = req.url.indexOf("/", 8);
+    const targetUrl =
+      pathStart === -1 ? TARGET_BASE + "/" : TARGET_BASE + req.url.slice(pathStart);
+
+    const out = new Headers();
+    let clientIp = null;
+    for (const [k, v] of req.headers) {
+      if (STRIP_HEADERS.has(k)) continue;
+      if (k.startsWith("x-vercel-")) continue;
+      if (k === "x-real-ip") {
+        clientIp = v;
+        continue;
+      }
+      if (k === "x-forwarded-for") {
+        if (!clientIp) clientIp = v;
+        continue;
+      }
+      out.set(k, v);
+    }
+    if (clientIp) out.set("x-forwarded-for", clientIp);
+
+    const method = req.method;
+    const hasBody = method !== "GET" && method !== "HEAD";
+
+    return await fetch(targetUrl, {
+      method,
+      headers: out,
+      body: hasBody ? req.body : undefined,
+      duplex: "half",
+      redirect: "manual",
+    });
+  } catch (err) {
+    console.error("relay error:", err);
+    return new Response("Bad Gateway: Tunnel Failed", { status: 502 });
+  }
+}
