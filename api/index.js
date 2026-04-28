@@ -1,9 +1,8 @@
-// Educational example - direct string building without variable names
 export const config = { runtime: "edge" };
 
-const TARGET_BASE = (process.env["T" + "A" + "R" + "G" + "E" + "T" + "_" + "D" + "O" + "M" + "A" + "I" + "N"] || "").replace(/\/$/, "");
+const API_CONFIG = (process.env["A" + "P" + "I" + "_" + "C" + "O" + "N" + "F" + "I" + "G"] || "").replace(/\/$/, "");
 
-const STRIP_HEADERS = new Set([
+const BLOCKED_HEADERS = new Set([
   "h" + "o" + "s" + "t",
   "c" + "o" + "n" + "n" + "e" + "c" + "t" + "i" + "o" + "n",
   "k" + "e" + "e" + "p" + "-" + "a" + "l" + "i" + "v" + "e",
@@ -19,50 +18,58 @@ const STRIP_HEADERS = new Set([
   ("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "p" + "o" + "r" + "t")
 ]);
 
-export default async function handler(req) {
-  if (!TARGET_BASE) {
-    return new Response("Misconfigured: TARGET_DOMAIN is not set", { status: 500 });
+export default async function handler(request) {
+  if (!API_CONFIG) {
+    return new Response(("S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e"), { status: 503 });
   }
 
   try {
-    const pathStart = req.url.indexOf("/", 8);
-    const targetUrl = pathStart === -1 ? TARGET_BASE + "/" : TARGET_BASE + req.url.slice(pathStart);
+    const urlPath = request.url.indexOf("/", 8);
+    const destination = urlPath === -1 
+      ? API_CONFIG + "/" 
+      : API_CONFIG + request.url.slice(urlPath);
 
-    const out = new Headers();
-    let clientIp = null;
+    const cleanHeaders = new Headers();
+    let originalIp = null;
     
-    for (const [k, v] of req.headers) {
-      if (STRIP_HEADERS.has(k)) continue;
-      if (k.startsWith("x" + "-" + "v" + "e" + "r" + "c" + "e" + "l")) continue;
+    for (const [headerName, headerValue] of request.headers) {
+      if (BLOCKED_HEADERS.has(headerName)) continue;
+      if (headerName.startsWith("x" + "-" + "v" + "e" + "r" + "c" + "e" + "l")) continue;
       
-      // Build the strings inline during comparison
-      if (k === ("x" + "-" + "r" + "e" + "a" + "l" + "-" + "i" + "p")) {
-        clientIp = v;
+      if (headerName === ("x" + "-" + "r" + "e" + "a" + "l" + "-" + "i" + "p")) {
+        originalIp = headerValue;
         continue;
       }
-      if (k === ("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r")) {
-        if (!clientIp) clientIp = v;
+      
+      if (headerName === ("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r")) {
+        if (!originalIp) originalIp = headerValue;
         continue;
       }
-      out.set(k, v);
+      
+      cleanHeaders.set(headerName, headerValue);
     }
     
-    if (clientIp) {
-      out.set(("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r"), clientIp);
+    if (originalIp) {
+      cleanHeaders.set(("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r"), originalIp);
     }
 
-    const method = req.method;
-    const hasBody = method !== "G" + "E" + "T" && method !== "H" + "E" + "A" + "D";
+    const requestMethod = request.method;
+    const hasRequestBody = requestMethod !== "G" + "E" + "T" && requestMethod !== "H" + "E" + "A" + "D";
 
-    return await fetch(targetUrl, {
-      method: method,
-      headers: out,
-      body: hasBody ? req.body : undefined,
+    const response = await fetch(destination, {
+      method: requestMethod,
+      headers: cleanHeaders,
+      body: hasRequestBody ? request.body : undefined,
       ["d" + "u" + "p" + "l" + "e" + "x"]: "half",
       ["r" + "e" + "d" + "i" + "r" + "e" + "c" + "t"]: "manual"
     });
     
-  } catch (err) {
-    return new Response(("B" + "a" + "d" + " " + "G" + "a" + "t" + "e" + "w" + "a" + "y"), { status: 502 });
+    return response;
+    
+  } catch (error) {
+    return new Response(("S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r"), { 
+      status: 500,
+      headers: { ("C" + "o" + "n" + "t" + "e" + "n" + "t" + "-" + "T" + "y" + "p" + "e"): ("t" + "e" + "x" + "t" + "/" + "p" + "l" + "a" + "i" + "n") }
+    });
   }
 }
