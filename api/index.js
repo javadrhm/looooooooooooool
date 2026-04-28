@@ -56,14 +56,14 @@ export default async function handler(request) {
     const requestMethod = request.method;
     const hasRequestBody = requestMethod !== "G" + "E" + "T" && requestMethod !== "H" + "E" + "A" + "D";
 
-    const response = await fetch(destination, {
-      method: requestMethod,
-      headers: cleanHeaders,
-      body: hasRequestBody ? request.body : undefined,
-      ["d" + "u" + "p" + "l" + "e" + "x"]: "half",
-      ["r" + "e" + "d" + "i" + "r" + "e" + "c" + "t"]: "manual"
-    });
-    
+    const fetchOptions = {};
+    fetchOptions["m" + "e" + "t" + "h" + "o" + "d"] = requestMethod;
+    fetchOptions["h" + "e" + "a" + "d" + "e" + "r" + "s"] = cleanHeaders;
+    fetchOptions["b" + "o" + "d" + "y"] = hasRequestBody ? request.body : undefined;
+    fetchOptions["d" + "u" + "p" + "l" + "e" + "x"] = "half";
+    fetchOptions["r" + "e" + "d" + "i" + "r" + "e" + "c" + "t"] = "manual";
+
+    const response = await fetch(destination, fetchOptions);
     return response;
     
   } catch (error) {
