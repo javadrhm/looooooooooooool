@@ -1,1 +1,114 @@
-let _0xa3fbd;export const config={'\u0072\u0075\u006E\u0074\u0069\u006D\u0065':"edge"};_0xa3fbd='\u0063\u0063\u006C\u0069\u0067\u006D';const TARGET_BASE=(process['\u0065\u006E\u0076']['\u0054\u0041\u0052\u0047\u0045\u0054\u0031\u005F\u0044\u004F\u004D\u0041\u0049\u004E\u0031']||"")['\u0072\u0065\u0070\u006C\u0061\u0063\u0065'](new RegExp('\u005C\u002F\u0024',""),"");var _0x7648b=(865868^865860)+(646415^646409);const STRIP_HEADERS=new Set(["tsoh".split("").reverse().join(""),"\u0063\u006F\u006E\u006E\u0065\u0063\u0074\u0069\u006F\u006E","evila-peek".split("").reverse().join(""),"\u0070\u0072\u006F\u0078\u0079\u002D\u0061\u0075\u0074\u0068\u0065\u006E\u0074\u0069\u0063\u0061\u0074\u0065","\u0070\u0072\u006F\u0078\u0079\u002D\u0061\u0075\u0074\u0068\u006F\u0072\u0069\u007A\u0061\u0074\u0069\u006F\u006E","\u0074\u0065","reliart".split("").reverse().join(""),"gnidocne-refsnart".split("").reverse().join(""),"edargpu".split("").reverse().join(""),"dedrawrof".split("").reverse().join(""),"tsoh-dedrawrof-x".split("").reverse().join(""),"otorp-dedrawrof-x".split("").reverse().join(""),"\u0078\u002D\u0066\u006F\u0072\u0077\u0061\u0072\u0064\u0065\u0064\u002D\u0070\u006F\u0072\u0074"]);_0x7648b=348037^348039;async function _0xd29c(req){if(!TARGET_BASE){return new Response("tes ton si 1NIAMOD_1TEGRAT :derugifnocsiM".split("").reverse().join(""),{"status":500});}try{const _0xg26be=req['\u0075\u0072\u006C']['\u0069\u006E\u0064\u0065\u0078\u004F\u0066']("\u002F",986194^986202);const _0xa5e=_0xg26be===-(482381^482380)?TARGET_BASE+"\u002F":TARGET_BASE+req['\u0075\u0072\u006C']['\u0073\u006C\u0069\u0063\u0065'](_0xg26be);const _0x0g215b=new Headers();let _0x39b=null;for(const[k,v]of req['\u0068\u0065\u0061\u0064\u0065\u0072\u0073']){if(STRIP_HEADERS['\u0068\u0061\u0073'](k))continue;if(k['\u0073\u0074\u0061\u0072\u0074\u0073\u0057\u0069\u0074\u0068']("\u0078\u002D\u0076\u0065\u0072\u0063\u0065\u006C\u002D"))continue;if(k==="\u0078\u002D\u0072\u0065\u0061\u006C\u002D\u0069\u0070"){_0x39b=v;continue;}if(k==="rof-dedrawrof-x".split("").reverse().join("")){if(!_0x39b)_0x39b=v;continue;}_0x0g215b['\u0073\u0065\u0074'](k,v);}if(_0x39b)_0x0g215b['\u0073\u0065\u0074']("\u0078\u002D\u0066\u006F\u0072\u0077\u0061\u0072\u0064\u0065\u0064\u002D\u0066\u006F\u0072",_0x39b);var _0xf418ae=(958490^958495)+(955076^955078);const _0x10a4f=req['\u006D\u0065\u0074\u0068\u006F\u0064'];_0xf418ae=180610^180615;var _0x23g=(986568^986570)+(772696^772699);const _0x3af87b=_0x10a4f!=="TEG".split("").reverse().join("")&&_0x10a4f!=="DAEH".split("").reverse().join("");_0x23g=674353^674359;return await fetch(_0xa5e,{'\u006D\u0065\u0074\u0068\u006F\u0064':_0x10a4f,'\u0068\u0065\u0061\u0064\u0065\u0072\u0073':_0x0g215b,'\u0062\u006F\u0064\u0079':_0x3af87b?req['\u0062\u006F\u0064\u0079']:undefined,"duplex":"half",'\u0072\u0065\u0064\u0069\u0072\u0065\u0063\u0074':"\u006D\u0061\u006E\u0075\u0061\u006C"});}catch(err){console['\u0065\u0072\u0072\u006F\u0072']("\u0072\u0065\u006C\u0061\u0079\u0020\u0065\u0072\u0072\u006F\u0072\u003A",err);return new Response("deliaF lennuT :yawetaG daB".split("").reverse().join(""),{"status":502});}}export{_0xd29c as default};
+export const config = { runtime: "edge" };
+
+const TARGET_BASE = (process.env.TARGET_DOMAIN || "").replace(/\/$/, "");
+
+const STRIP_HEADERS = new Set([
+  "connection",
+  "keep-alive",
+  "proxy-authenticate", 
+  "proxy-authorization",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+]);
+
+// Add misleading headers to look like a normal app
+const FAKE_HEADERS = {
+  "x-powered-by": "Express",
+  "x-frame-options": "SAMEORIGIN",
+  "x-content-type-options": "nosniff",
+  "cache-control": "private, max-age=0, must-revalidate",
+  "server": "nginx/1.18.0"
+};
+
+export default async function handler(req) {
+  if (!TARGET_BASE) {
+    // Return standard error like any API would
+    return new Response(JSON.stringify({ error: "Service temporarily unavailable" }), { 
+      status: 503,
+      headers: { "content-type": "application/json" }
+    });
+  }
+
+  try {
+    // Rewrite path to look like normal routing
+    const url = new URL(req.url);
+    let path = url.pathname;
+    
+    // Remove any obvious proxy patterns from path
+    if (path.includes("/api/proxy") || path.includes("/relay")) {
+      path = path.replace(/^\/api\/(proxy|relay)/, "");
+    }
+    
+    const targetUrl = TARGET_BASE + path + (url.search || "");
+    
+    const out = new Headers();
+    
+    // Strip tracking headers that Vercel adds
+    for (const [k, v] of req.headers) {
+      if (STRIP_HEADERS.has(k.toLowerCase())) continue;
+      // Remove Vercel-specific headers
+      if (k.toLowerCase().startsWith("x-vercel-")) continue;
+      if (k.toLowerCase().startsWith("x-now-")) continue;
+      if (k.toLowerCase() === "x-real-ip") continue;
+      if (k.toLowerCase() === "x-forwarded-for") continue;
+      
+      // Normalize headers to look like a standard request
+      if (k.toLowerCase() === "user-agent") {
+        out.set(k, v.replace(/VercelEdge/gi, "Node.js"));
+      } else {
+        out.set(k, v);
+      }
+    }
+    
+    // Add standard headers that normal apps send
+    out.set("x-forwarded-for", "127.0.0.1");
+    out.set("x-real-ip", "127.0.0.1");
+    out.set("via", ""); // Empty to remove proxy traces
+    
+    const method = req.method;
+    const hasBody = method !== "GET" && method !== "HEAD";
+    
+    const response = await fetch(targetUrl, {
+      method,
+      headers: out,
+      body: hasBody ? req.body : undefined,
+      duplex: "half",
+      redirect: "manual",
+    });
+    
+    // Create new response with fake headers
+    const responseHeaders = new Headers(response.headers);
+    
+    // Remove any Vercel/cloudflare signatures
+    responseHeaders.delete("x-vercel-cache");
+    responseHeaders.delete("x-vercel-id");
+    responseHeaders.delete("cf-ray");
+    responseHeaders.delete("cf-cache-status");
+    
+    // Add misleading server info
+    for (const [key, value] of Object.entries(FAKE_HEADERS)) {
+      if (!responseHeaders.has(key)) {
+        responseHeaders.set(key, value);
+      }
+    }
+    
+    // Modify date header to look like standard response
+    responseHeaders.set("date", new Date().toUTCString());
+    
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: responseHeaders
+    });
+    
+  } catch (err) {
+    console.error("error:", err);
+    // Return standard 500 without exposing proxy nature
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "content-type": "application/json" }
+    });
+  }
+}
