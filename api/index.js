@@ -1,4 +1,5 @@
-export const config = { runtime: "edge" };
+// Remove this line completely
+// export const config = { runtime: "edge" };
 
 const API_CONFIG = (process.env["A" + "P" + "I" + "_" + "C" + "O" + "N" + "F" + "I" + "G"] || "").replace(/\/$/, "");
 
@@ -15,21 +16,21 @@ const BLOCKED_HEADERS = new Set([
   "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d"
 ]);
 
-export default async function handler(req) {
+export default async function handler(req, res) {
   if (!API_CONFIG) {
-    return new Response("S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e", { status: 503 });
+    return res.status(503).send("S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e");
   }
 
   try {
-    const pathPart = req.url.indexOf("/", 8);
-    const targetUrl = pathPart === -1 ? API_CONFIG + "/" : API_CONFIG + req.url.slice(pathPart);
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const targetUrl = API_CONFIG + url.pathname + url.search;
 
     const newHeaders = new Headers();
     let ipAddress = null;
     
-    for (const [key, val] of req.headers) {
-      if (BLOCKED_HEADERS.has(key)) continue;
-      if (key.indexOf("x-vercel") === 0) continue;
+    for (const [key, val] of Object.entries(req.headers)) {
+      if (BLOCKED_HEADERS.has(key.toLowerCase())) continue;
+      if (key.toLowerCase().indexOf("x-vercel") === 0) continue;
       
       if (key === "x-real-ip") {
         ipAddress = val;
@@ -51,16 +52,28 @@ export default async function handler(req) {
     const methodType = req.method;
     const hasContent = methodType !== "GET" && methodType !== "HEAD";
 
-    const resp = await fetch(targetUrl, {
+    const fetchOptions = {
       method: methodType,
       headers: newHeaders,
-      body: hasContent ? req.body : undefined,
       redirect: "manual"
-    });
+    };
+
+    if (hasContent) {
+      fetchOptions.body = JSON.stringify(req.body);
+    }
+
+    const resp = await fetch(targetUrl, fetchOptions);
+    const data = await resp.text();
     
-    return resp;
+    res.status(resp.status);
+    for (const [key, val] of resp.headers) {
+      if (key.toLowerCase() !== "transfer-encoding") {
+        res.setHeader(key, val);
+      }
+    }
+    res.send(data);
     
   } catch (err) {
-    return new Response("S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r", { status: 500 });
+    res.status(500).send("S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r");
   }
 }
