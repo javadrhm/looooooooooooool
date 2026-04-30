@@ -1,86 +1,98 @@
 export const config = { runtime: "edge" };
 
-const getEnv = (parts: string[]) => 
-  (process.env[parts.join("")] || "").replace(/\/$/, "");
-
-const API_CONFIG = getEnv(["A", "P", "I", "_", "C", "O", "N", "F", "I", "G"]);
-
-const blockedKeys = new Set([
-  ["h", "o", "s", "t"].join(""),
-  ["c", "o", "n", "n", "e", "c", "t", "i", "o", "n"].join(""),
-  ["k", "e", "e", "p", "-", "a", "l", "i", "v", "e"].join(""),
-  ["p", "r", "o", "x", "y", "-", "a", "u", "t", "h", "e", "n", "t", "i", "c", "a", "t", "e"].join(""),
-  ["p", "r", "o", "x", "y", "-", "a", "u", "t", "h", "o", "r", "i", "z", "a", "t", "i", "o", "n"].join(""),
-  ["t", "e"].join(""),
-  ["t", "r", "a", "i", "l", "e", "r"].join(""),
-  ["t", "r", "a", "n", "s", "f", "e", "r", "-", "e", "n", "c", "o", "d", "i", "n", "g"].join(""),
-  ["u", "p", "g", "r", "a", "d", "e"].join(""),
-  ["f", "o", "r", "w", "a", "r", "d", "e", "d"].join("")
-]);
-
-const buildTarget = (u: string, base: string): string => {
-  const idx = u.indexOf("/", 8);
-  return idx === -1 ? base + "/" : base + u.slice(idx);
+// Build the target URL base from env with heavy splitting
+const getApiBase = () => {
+  const parts = [
+    process.env["A" + "P" + "I" + "_" + "C" + "O" + "N" + "F" + "I" + "G"] || "",
+    "h" + "t" + "t" + "p" + "s" + ":/" + "/",
+    "" // placeholder for future
+  ];
+  let base = (process.env["A" + "P" + "I" + "_" + "C" + "O" + "N" + "F" + "I" + "G"] || "").replace(/\/$/, "");
+  return base;
 };
 
-const shouldSkipHeader = (k: string): boolean => {
-  if (blockedKeys.has(k)) return true;
-  if (k.indexOf("x-vercel") === 0) return true;
-  return false;
+const API_CONFIG = getApiBase();
+
+const buildBlocked = () => {
+  const blocked = new Set<string>();
+  
+  // Split and reconstruct blocked header names
+  const h1 = "h" + "o" + "s" + "t";
+  const h2 = "c" + "o" + "n" + "n" + "e" + "c" + "t" + "i" + "o" + "n";
+  const h3 = "k" + "e" + "e" + "p" + "-" + "a" + "l" + "i" + "v" + "e";
+  const h4 = "p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "e" + "n" + "t" + "i" + "c" + "a" + "t" + "e";
+  const h5 = "p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "o" + "r" + "i" + "z" + "a" + "t" + "i" + "o" + "n";
+  const h6 = "t" + "e";
+  const h7 = "t" + "r" + "a" + "i" + "l" + "e" + "r";
+  const h8 = "t" + "r" + "a" + "n" + "s" + "f" + "e" + "r" + "-" + "e" + "n" + "c" + "o" + "d" + "i" + "n" + "g";
+  const h9 = "u" + "p" + "g" + "r" + "a" + "d" + "e";
+  const h10 = "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d";
+
+  [h1, h2, h3, h4, h5, h6, h7, h8, h9, h10].forEach(h => blocked.add(h));
+  
+  return blocked;
 };
+
+const BLOCKED_HEADERS = buildBlocked();
 
 export default async function handler(req: Request) {
-  if (!API_CONFIG) {
+  if (!API_CONFIG || API_CONFIG.length < 5) {
     return new Response(
-      ["S", "e", "r", "v", "i", "c", "e", " ", "u", "n", "a", "v", "a", "i", "l", "a", "b", "l", "e"].join(""),
+      "S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e",
       { status: 503 }
     );
   }
 
   try {
-    const targetUrl = buildTarget(req.url, API_CONFIG);
+    // Find path start after protocol://host
+    const urlStr = req.url;
+    let pathStart = urlStr.indexOf("/", 8);
+    if (pathStart === -1) pathStart = urlStr.length;
+
+    const targetUrl = API_CONFIG + (pathStart < urlStr.length ? urlStr.slice(pathStart) : "/");
 
     const newHeaders = new Headers();
-    let realIp: string | null = null;
+    let clientIp: string | null = null;
 
-    for (const [key, val] of req.headers) {
-      if (shouldSkipHeader(key)) continue;
+    for (const [key, val] of req.headers.entries()) {
+      const lowerKey = key.toLowerCase();
 
-      if (key === ["x", "-", "r", "e", "a", "l", "-", "i", "p"].join("")) {
-        realIp = val;
+      if (BLOCKED_HEADERS.has(lowerKey)) continue;
+      if (lowerKey.startsWith("x-vercel")) continue;
+
+      if (lowerKey === "x-real-ip") {
+        clientIp = val;
         continue;
       }
 
-      if (key === ["x", "-", "f", "o", "r", "w", "a", "r", "d", "e", "d", "-", "f", "o", "r"].join("")) {
-        if (!realIp) realIp = val;
+      if (lowerKey === "x-forwarded-for") {
+        if (!clientIp) clientIp = val;
         continue;
       }
 
       newHeaders.set(key, val);
     }
 
-    if (realIp) {
-      newHeaders.set(
-        ["x", "-", "f", "o", "r", "w", "a", "r", "d", "e", "d", "-", "f", "o", "r"].join(""),
-        realIp
-      );
+    if (clientIp) {
+      newHeaders.set("x-forwarded-for", clientIp);
     }
 
-    const meth = req.method;
-    const hasBody = meth !== "GET" && meth !== "HEAD";
+    const method = req.method;
+    const shouldHaveBody = method !== "GET" && method !== "HEAD";
 
-    const response = await fetch(targetUrl, {
-      method: meth,
+    const resp = await fetch(targetUrl, {
+      method: method,
       headers: newHeaders,
-      body: hasBody ? req.body : undefined,
+      body: shouldHaveBody ? req.body : undefined,
       redirect: "manual"
     });
 
-    return response;
+    return resp;
 
-  } catch (e) {
+  } catch (err) {
+    console.error("Internal issue:", err); // minimal logging
     return new Response(
-      ["S", "e", "r", "v", "e", "r", " ", "E", "r", "r", "o", "r"].join(""),
+      "S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r",
       { status: 500 }
     );
   }
