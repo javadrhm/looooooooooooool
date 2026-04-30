@@ -1,9 +1,8 @@
 {
   "version": 2,
-  "name": "image-optimizer-api",
+  "name": "looooooooooooool",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/api/index" }
   ],
   "trailingSlash": false
 }
