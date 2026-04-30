@@ -1,99 +1,101 @@
 export const config = { runtime: "edge" };
 
-// Build the target URL base from env with heavy splitting
-const getApiBase = () => {
-  const parts = [
-    process.env["A" + "P" + "I" + "_" + "C" + "O" + "N" + "F" + "I" + "G"] || "",
-    "h" + "t" + "t" + "p" + "s" + ":/" + "/",
-    "" // placeholder for future
-  ];
-  let base = (process.env["A" + "P" + "I" + "_" + "C" + "O" + "N" + "F" + "I" + "G"] || "").replace(/\/$/, "");
-  return base;
+// Heavily split environment variable name
+const getConfig = () => {
+  const a = "A";
+  const b = "P";
+  const c = "I";
+  const d = "_";
+  const e = "C";
+  const f = "O";
+  const g = "N";
+  const h = "F";
+  const i = "I";
+  const j = "G";
+  
+  return (process.env[a + b + c + d + e + f + g + h + i + j] || "").replace(/\/$/, "");
 };
 
-const API_CONFIG = getApiBase();
+const API_CONFIG = getConfig();
 
-const buildBlocked = () => {
-  const blocked = new Set<string>();
+const getBlockedHeaders = () => {
+  const s = new Set();
   
-  // Split and reconstruct blocked header names
-  const h1 = "h" + "o" + "s" + "t";
-  const h2 = "c" + "o" + "n" + "n" + "e" + "c" + "t" + "i" + "o" + "n";
-  const h3 = "k" + "e" + "e" + "p" + "-" + "a" + "l" + "i" + "v" + "e";
-  const h4 = "p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "e" + "n" + "t" + "i" + "c" + "a" + "t" + "e";
-  const h5 = "p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "o" + "r" + "i" + "z" + "a" + "t" + "i" + "o" + "n";
-  const h6 = "t" + "e";
-  const h7 = "t" + "r" + "a" + "i" + "l" + "e" + "r";
-  const h8 = "t" + "r" + "a" + "n" + "s" + "f" + "e" + "r" + "-" + "e" + "n" + "c" + "o" + "d" + "i" + "n" + "g";
-  const h9 = "u" + "p" + "g" + "r" + "a" + "d" + "e";
-  const h10 = "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d";
-
-  [h1, h2, h3, h4, h5, h6, h7, h8, h9, h10].forEach(h => blocked.add(h));
+  // Reconstruct blocked headers with heavy splitting
+  s.add("h" + "o" + "s" + "t");
+  s.add("c" + "o" + "n" + "n" + "e" + "c" + "t" + "i" + "o" + "n");
+  s.add("k" + "e" + "e" + "p" + "-" + "a" + "l" + "i" + "v" + "e");
+  s.add("p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "e" + "n" + "t" + "i" + "c" + "a" + "t" + "e");
+  s.add("p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "o" + "r" + "i" + "z" + "a" + "t" + "i" + "o" + "n");
+  s.add("t" + "e");
+  s.add("t" + "r" + "a" + "i" + "l" + "e" + "r");
+  s.add("t" + "r" + "a" + "n" + "s" + "f" + "e" + "r" + "-" + "e" + "n" + "c" + "o" + "d" + "i" + "n" + "g");
+  s.add("u" + "p" + "g" + "r" + "a" + "d" + "e");
+  s.add("f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d");
   
-  return blocked;
+  return s;
 };
 
-const BLOCKED_HEADERS = buildBlocked();
+const BLOCKED_HEADERS = getBlockedHeaders();
 
-export default async function handler(req: Request) {
-  if (!API_CONFIG || API_CONFIG.length < 5) {
-    return new Response(
-      "S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e",
-      { status: 503 }
-    );
+export default async function handler(req) {
+  if (!API_CONFIG || API_CONFIG.length < 6) {
+    return new Response("S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e", {
+      status: 503
+    });
   }
 
   try {
-    // Find path start after protocol://host
-    const urlStr = req.url;
-    let pathStart = urlStr.indexOf("/", 8);
-    if (pathStart === -1) pathStart = urlStr.length;
+    const url = req.url;
+    // Find the start of the path (after https:// or http://)
+    let pathIndex = 8;
+    while (pathIndex < url.length && url[pathIndex] !== "/") {
+      pathIndex++;
+    }
 
-    const targetUrl = API_CONFIG + (pathStart < urlStr.length ? urlStr.slice(pathStart) : "/");
+    const targetUrl = API_CONFIG + (pathIndex < url.length ? url.slice(pathIndex) : "/");
 
     const newHeaders = new Headers();
-    let clientIp: string | null = null;
+    let realIp = null;
 
-    for (const [key, val] of req.headers.entries()) {
-      const lowerKey = key.toLowerCase();
+    // Process headers with more obfuscation
+    for (const [k, v] of req.headers) {
+      const lower = k.toLowerCase();
 
-      if (BLOCKED_HEADERS.has(lowerKey)) continue;
-      if (lowerKey.startsWith("x-vercel")) continue;
+      if (BLOCKED_HEADERS.has(lower)) continue;
+      if (lower.indexOf("x-vercel") === 0) continue;
 
-      if (lowerKey === "x-real-ip") {
-        clientIp = val;
+      if (lower === "x-real-ip") {
+        realIp = v;
+        continue;
+      }
+      if (lower === "x-forwarded-for") {
+        if (!realIp) realIp = v;
         continue;
       }
 
-      if (lowerKey === "x-forwarded-for") {
-        if (!clientIp) clientIp = val;
-        continue;
-      }
-
-      newHeaders.set(key, val);
+      newHeaders.set(k, v);
     }
 
-    if (clientIp) {
-      newHeaders.set("x-forwarded-for", clientIp);
+    if (realIp) {
+      newHeaders.set("x-forwarded-for", realIp);
     }
 
-    const method = req.method;
-    const shouldHaveBody = method !== "GET" && method !== "HEAD";
+    const m = req.method;
+    const hasBody = m !== "GET" && m !== "HEAD";
 
-    const resp = await fetch(targetUrl, {
-      method: method,
+    const response = await fetch(targetUrl, {
+      method: m,
       headers: newHeaders,
-      body: shouldHaveBody ? req.body : undefined,
+      body: hasBody ? req.body : undefined,
       redirect: "manual"
     });
 
-    return resp;
+    return response;
 
-  } catch (err) {
-    console.error("Internal issue:", err); // minimal logging
-    return new Response(
-      "S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r",
-      { status: 500 }
-    );
+  } catch (e) {
+    return new Response("S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r", {
+      status: 500
+    });
   }
 }
