@@ -1,13 +1,8 @@
 export const config = { runtime: "edge" };
 
-const API_CONFIG = (() => {
-  const key = "API_CONFIG";
-  let val = process.env[key] || "";
-  if (val.endsWith("/")) val = val.slice(0, -1);
-  return val;
-})();
+const API_CONFIG = (process.env.API_CONFIG || "").replace(/\/$/, "");
 
-const BLOCKED = new Set([
+const BLOCKED_HEADERS = new Set([
   "host", "connection", "keep-alive",
   "proxy-authenticate", "proxy-authorization",
   "te", "trailer", "transfer-encoding", "upgrade", "forwarded"
@@ -19,48 +14,49 @@ export default async function handler(req) {
   }
 
   try {
+    // Extract path safely
     const url = req.url;
-    let pathStart = url.indexOf("/", 8);
-    if (pathStart === -1) pathStart = url.length;
+    const pathStart = url.indexOf("/", 8);
+    const targetUrl = API_CONFIG + (pathStart > 0 ? url.slice(pathStart) : "/");
 
-    const targetUrl = API_CONFIG + url.slice(pathStart || 0);
-
-    const headers = new Headers();
-    let ip = null;
+    const newHeaders = new Headers();
+    let clientIP = null;
 
     for (const [key, value] of req.headers) {
-      const k = key.toLowerCase();
+      const lowerKey = key.toLowerCase();
 
-      if (BLOCKED.has(k)) continue;
-      if (k.startsWith("x-vercel")) continue;
+      if (BLOCKED_HEADERS.has(lowerKey)) continue;
+      if (lowerKey.startsWith("x-vercel")) continue;
 
-      if (k === "x-real-ip") {
-        ip = value;
+      if (lowerKey === "x-real-ip") {
+        clientIP = value;
         continue;
       }
-      if (k === "x-forwarded-for") {
-        if (!ip) ip = value;
+      if (lowerKey === "x-forwarded-for") {
+        if (!clientIP) clientIP = value;
         continue;
       }
 
-      headers.set(key, value);
+      newHeaders.set(key, value);
     }
 
-    if (ip) headers.set("x-forwarded-for", ip);
+    if (clientIP) {
+      newHeaders.set("x-forwarded-for", clientIP);
+    }
 
     const method = req.method;
     const hasBody = method !== "GET" && method !== "HEAD";
 
-    const res = await fetch(targetUrl, {
-      method,
-      headers,
+    const response = await fetch(targetUrl, {
+      method: method,
+      headers: newHeaders,
       body: hasBody ? req.body : undefined,
       redirect: "manual"
     });
 
-    return res;
+    return response;
 
   } catch (err) {
-    return new Response("Server Error", { status: 500 });
+    return new Response("Service unavailable", { status: 503 });
   }
 }
