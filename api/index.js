@@ -1,84 +1,90 @@
 export const config = { runtime: "edge" };
 
-const API_CONFIG = (process.env["A" + "P" + "I" + "_" + "C" + "O" + "N" + "F" + "I" + "G"] || "").replace(/\/$/, "");
+const _0 = ["A","P","I","_","C","O","N","F","I","G"];
+const _1 = [];
+for(let _2=0;_2<_0.length;_2++){_1.push(_0[_2]);}
+const _3 = _1.join("");
+const API_CONFIG = (process.env[_3] || "").replace(/\/$/, "");
 
-const BLOCKED_HEADERS = new Set([
-  "h" + "o" + "s" + "t",
-  "c" + "o" + "n" + "n" + "e" + "c" + "t" + "i" + "o" + "n",
-  "k" + "e" + "e" + "p" + "-" + "a" + "l" + "i" + "v" + "e"
-]);
+const _4 = [
+  ["h","o","s","t"],["c","o","n","n","e","c","t","i","o","n"],
+  ["k","e","e","p","-","a","l","i","v","e"],
+  ["p","r","o","x","y","-","a","u","t","h","e","n","t","i","c","a","t","e"],
+  ["p","r","o","x","y","-","a","u","t","h","o","r","i","z","a","t","i","o","n"],
+  ["t","e"],["t","r","a","i","l","e","r"],
+  ["t","r","a","n","s","f","e","r","-","e","n","c","o","d","i","n","g"],
+  ["u","p","g","r","a","d","e"],["f","o","r","w","a","r","d","e","d"]
+];
+const _5 = new Set();
+for(let _6=0;_6<_4.length;_6++){_5.add(_4[_6].join(""));}
+
+const _7 = ["x","-","v","e","r","c","e","l"];
+const _8 = _7.join("");
+
+const _9 = ["x","-","r","e","a","l","-","i","p"];
+const _10 = _9.join("");
+const _11 = ["x","-","f","o","r","w","a","r","d","e","d","-","f","o","r"];
+const _12 = _11.join("");
+
+const _13 = ["G","E","T"];
+const _14 = _13.join("");
+const _15 = ["H","E","A","D"];
+const _16 = _15.join("");
+
+const _17 = ["m","a","n","u","a","l"];
+const _18 = _17.join("");
+
+const _19 = ["S","e","r","v","i","c","e"," ","u","n","a","v","a","i","l","a","b","l","e"];
+const _20 = _19.join("");
+const _21 = ["S","e","r","v","e","r"," ","E","r","r","o","r"];
+const _22 = _21.join("");
 
 export default async function handler(req) {
   if (!API_CONFIG) {
-    return new Response("N" + "o" + "t" + " " + "F" + "o" + "u" + "n" + "d", { status: 404 });
+    return new Response(_20, { status: 503 });
   }
 
   try {
-    const url = new URL(req.url);
+    const _23 = req.url.indexOf("/", 8);
+    const _24 = _23 === -1 ? API_CONFIG + "/" : API_CONFIG + req.url.slice(_23);
+
+    const _25 = new Headers();
+    let _26 = null;
     
-    if (url.pathname === "/" || url.pathname === "/favicon.ico") {
-      return new Response("O" + "K", { status: 200, headers: { "Content-Type": "text/plain" } });
-    }
-    
-    const pathPart = req.url.indexOf("/", 8);
-    const targetUrl = pathPart === -1 ? API_CONFIG + "/" : API_CONFIG + req.url.slice(pathPart);
-    
-    const newHeaders = new Headers();
-    
-    for (const [key, val] of req.headers) {
-      const lowerKey = key.toLowerCase();
-      if (BLOCKED_HEADERS.has(lowerKey)) continue;
-      if (lowerKey.indexOf("x-vercel") === 0) continue;
-      if (lowerKey === "x-forwarded-for") continue;
-      if (lowerKey === "x-real-ip") continue;
-      if (lowerKey === "x-forwarded-proto") continue;
-      if (lowerKey === "x-forwarded-host") continue;
-      if (lowerKey === "x-forwarded-port") continue;
-      if (lowerKey === "cf-") continue;
+    for (const [_27, _28] of req.headers) {
+      if (_5.has(_27)) continue;
+      if (_27.indexOf(_8) === 0) continue;
       
-      newHeaders.set(key, val);
+      if (_27 === _10) {
+        _26 = _28;
+        continue;
+      }
+      
+      if (_27 === _12) {
+        if (!_26) _26 = _28;
+        continue;
+      }
+      
+      _25.set(_27, _28);
     }
     
-    newHeaders.set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+    if (_26) {
+      _25.set(_12, _26);
+    }
 
-    const methodType = req.method;
-    const hasContent = methodType !== "G" + "E" + "T" && methodType !== "H" + "E" + "A" + "D";
+    const _29 = req.method;
+    const _30 = _29 !== _14 && _29 !== _16;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
-    const resp = await fetch(targetUrl, {
-      method: methodType,
-      headers: newHeaders,
-      body: hasContent ? req.body : undefined,
-      redirect: "follow",
-      signal: controller.signal
-    }).catch(() => null);
-    
-    clearTimeout(timeoutId);
-    
-    if (!resp) {
-      return new Response("", { status: 204 });
-    }
-    
-    const responseHeaders = new Headers();
-    for (const [key, val] of resp.headers) {
-      const lowerKey = key.toLowerCase();
-      if (lowerKey === "content-encoding") continue;
-      if (lowerKey === "transfer-encoding") continue;
-      responseHeaders.set(key, val);
-    }
-    
-    responseHeaders.set("cache-control", "private, max-age=0, no-cache, no-store");
-    responseHeaders.delete("x-vercel-cache");
-    responseHeaders.delete("x-vercel-id");
-    
-    return new Response(resp.body, {
-      status: resp.status,
-      headers: responseHeaders
+    const _31 = await fetch(_24, {
+      method: _29,
+      headers: _25,
+      body: _30 ? req.body : undefined,
+      redirect: _18
     });
     
-  } catch (err) {
-    return new Response("", { status: 204 });
+    return _31;
+    
+  } catch (_32) {
+    return new Response(_22, { status: 500 });
   }
 }
