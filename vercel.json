@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "image-optimizer-api",
+  "name": "mybeautynextapp",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/(.*)", "destination": "/index.html" }
