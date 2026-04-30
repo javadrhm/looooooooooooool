@@ -1,9 +1,14 @@
 {
   "version": 2,
-  "name": "mybeautynextapp",
+  "name": "cdn-optimizer",
+  "functions": {
+    "api/*": {
+      "runtime": "nodejs22.x"
+    }
+  },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "trailingSlash": false
+    { "source": "/v1/(.*)", "destination": "/api/index" },
+    { "source": "/optimize/(.*)", "destination": "/api/index" },
+    { "source": "/cdn/(.*)", "destination": "/api/index" }
+  ]
 }
