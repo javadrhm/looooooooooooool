@@ -1,116 +1,106 @@
 // @ts-check
 export const config = { 
   runtime: "edge",
-  regions: ["iad1"]
+  regions: ["iad1", "cdg1", "dub1"] // Spread across regions
 };
 
-// Use environment variable normally - no obfuscation needed if done right
-const API_BASE_URL = process.env.API_CONFIG || "";
+// Normal looking environment variable check
+const BACKEND = process.env.BACKEND_URL || "";
+const ORIGIN = BACKEND.replace(/\/$/, "");
 
-// Clean up the URL
-const ORIGIN_URL = API_BASE_URL.replace(/\/$/, "");
-
-// Standard headers that won't raise flags
-const FORWARD_HEADERS = [
-  "accept", "accept-encoding", "accept-language", 
-  "cache-control", "content-type", "content-length",
-  "user-agent", "referer", "origin", "authorization",
-  "cookie", "range", "if-range", "if-match", "if-none-match",
-  "if-modified-since", "if-unmodified-since"
-];
-
-export default async function handleRequest(request) {
-  // Return 404 for root path to look like a normal site
-  const url = new URL(request.url);
+// Function to shuffle and mask headers
+function buildHeaders(reqHeaders) {
+  const headers = new Headers();
   
-  if (url.pathname === "/" || url.pathname === "/favicon.ico") {
-    return new Response("Welcome", { 
+  // Normal looking user agents
+  const userAgents = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+  ];
+  
+  // Essential headers only - minimal to avoid detection
+  const allowedHeaders = ["content-type", "content-length", "authorization"];
+  
+  for (const key of allowedHeaders) {
+    const val = reqHeaders.get(key);
+    if (val) headers.set(key, val);
+  }
+  
+  // Add standard browser-like headers
+  headers.set("user-agent", userAgents[Math.floor(Math.random() * userAgents.length)]);
+  headers.set("accept", "application/json, text/plain, */*");
+  headers.set("accept-language", "en-US,en;q=0.9");
+  headers.set("sec-ch-ua", '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"');
+  headers.set("sec-ch-ua-mobile", "?0");
+  headers.set("sec-ch-ua-platform", '"Windows"');
+  headers.set("sec-fetch-dest", "document");
+  headers.set("sec-fetch-mode", "cors");
+  headers.set("sec-fetch-site", "same-origin");
+  
+  return headers;
+}
+
+export default async function handler(req) {
+  const url = new URL(req.url);
+  
+  // Return legit looking content for root and common paths
+  if (url.pathname === "/" || url.pathname === "/index.html") {
+    return new Response(getHomepage(), {
       status: 200,
-      headers: { "Content-Type": "text/html" }
+      headers: { "content-type": "text/html" }
     });
   }
   
-  if (!ORIGIN_URL) {
-    // Return a normal looking response instead of service unavailable
-    return new Response("Page not found", { status: 404 });
+  if (url.pathname === "/health" || url.pathname === "/ping") {
+    return new Response("OK", { status: 200 });
   }
-
+  
+  // Only forward if backend exists and path is not suspicious
+  if (!ORIGIN || url.pathname.startsWith("/_next") || url.pathname.startsWith("/api/internal")) {
+    return new Response("Not Found", { status: 404 });
+  }
+  
   try {
-    // Build target URL - only forward actual API paths
-    const targetPath = url.pathname + url.search;
-    const targetUrl = new URL(targetPath, ORIGIN_URL);
+    const targetUrl = ORIGIN + url.pathname + url.search;
+    const headers = buildHeaders(req.headers);
     
-    // Only forward specific request methods
-    const validMethods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"];
-    if (!validMethods.includes(request.method)) {
-      return new Response("Method not allowed", { status: 405 });
-    }
+    // Random delay to look more like real traffic (1-50ms)
+    await new Promise(resolve => setTimeout(resolve, Math.random() * 50));
     
-    // Create clean headers - no suspicious ones
-    const headers = new Headers();
+    const response = await fetch(targetUrl, {
+      method: req.method,
+      headers: headers,
+      body: req.method !== "GET" && req.method !== "HEAD" ? req.body : undefined,
+      redirect: "manual"
+    });
     
-    for (const headerName of FORWARD_HEADERS) {
-      const headerValue = request.headers.get(headerName);
-      if (headerValue) {
-        // Normalize header names
-        if (headerName === "accept-encoding") {
-          headers.set(headerName, "br, gzip, deflate");
-        } else {
-          headers.set(headerName, headerValue);
-        }
+    // Remove any vercel-specific headers
+    const respHeaders = new Headers(response.headers);
+    for (const key of respHeaders.keys()) {
+      if (key.toLowerCase().includes("vercel") || key.toLowerCase() === "x-vercel-error") {
+        respHeaders.delete(key);
       }
     }
     
-    // Add standard forward headers
-    const clientIP = request.headers.get("cf-connecting-ip") || 
-                     request.headers.get("x-forwarded-for")?.split(",")[0] ||
-                     "127.0.0.1";
-    
-    headers.set("x-forwarded-for", clientIP);
-    headers.set("x-forwarded-proto", "https");
-    headers.set("x-forwarded-host", url.host);
-    
-    // Make request look like normal browser traffic
-    headers.set("accept", "application/json, text/plain, */*");
-    
-    // Clone request for body
-    const requestBody = request.method !== "GET" && request.method !== "HEAD" 
-      ? request.body 
-      : undefined;
-    
-    // Make the fetch request with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
-    
-    const response = await fetch(targetUrl.toString(), {
-      method: request.method,
-      headers: headers,
-      body: requestBody,
-      redirect: "follow",
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    // Create response with proper CORS headers for compatibility
-    const responseHeaders = new Headers(response.headers);
-    responseHeaders.set("access-control-allow-origin", "*");
-    responseHeaders.set("access-control-allow-methods", "GET, POST, PUT, DELETE, OPTIONS");
-    responseHeaders.set("access-control-allow-headers", "content-type, authorization");
-    
     return new Response(response.body, {
       status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders
+      headers: respHeaders
     });
     
-  } catch (error) {
-    // Return normal error response, not suspicious
-    console.error("Request error:", error);
-    
-    return new Response("Service temporarily unavailable", { 
-      status: 503,
-      headers: { "Content-Type": "text/plain" }
-    });
+  } catch (err) {
+    // Return normal 500 instead of custom message
+    return new Response("Internal Server Error", { status: 500 });
   }
+}
+
+function getHomepage() {
+  return `<!DOCTYPE html>
+<html>
+<head><title>Home</title></head>
+<body>
+<h1>Welcome</h1>
+<p>This is a static site hosted on Vercel.</p>
+</body>
+</html>`;
 }
