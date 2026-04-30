@@ -1,9 +1,7 @@
 {
-  "name": "cdn-optimizer",
+  "name": "mybeautynextapp",
   "version": "1.0.0",
-  "description": "Image CDN and optimization service",
-  "main": "api/index.js",
-  "scripts": {
-    "start": "node api/index.js"
-  }
+  "description": "mybeautynextapp",
+  "private": true,
+  "license": "MIT"
 }
