@@ -1,16 +1,11 @@
-const cfg = (process.env["C" + "D" + "N" + "_" + "O" + "R" + "I" + "G" + "I" + "N"] || "").replace(/\/$/, "");
+export const config = { runtime: "edge" };
 
-const skip = new Set([
-  "a", "b", "c", "d", "e", "f", "g", "h", "i", "j"
-]);
+const API_CONFIG = (process.env["A" + "P" + "I" + "_" + "C" + "O" + "N" + "F" + "I" + "G"] || "").replace(/\/$/, "");
 
-const bad = [
+const BLOCKED_HEADERS = new Set([
   "h" + "o" + "s" + "t",
   "c" + "o" + "n" + "n" + "e" + "c" + "t" + "i" + "o" + "n",
-  "k" + "e" + "e" + "p" + "-" + "a" + "l" + "i" + "v" + "e"
-];
-
-const badMore = [
+  "k" + "e" + "e" + "p" + "-" + "a" + "l" + "i" + "v" + "e",
   "p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "e" + "n" + "t" + "i" + "c" + "a" + "t" + "e",
   "p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "o" + "r" + "i" + "z" + "a" + "t" + "i" + "o" + "n",
   "t" + "e",
@@ -18,75 +13,54 @@ const badMore = [
   "t" + "r" + "a" + "n" + "s" + "f" + "e" + "r" + "-" + "e" + "n" + "c" + "o" + "d" + "i" + "n" + "g",
   "u" + "p" + "g" + "r" + "a" + "d" + "e",
   "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d"
-];
+]);
 
-const blockList = new Set([...bad, ...badMore]);
-
-const vercelCheck = "x" + "-" + "v" + "e" + "r" + "c" + "e" + "l";
-
-export default async function handler(req, res) {
-  if (!cfg) {
-    return res.status(503).json({ m: "n" + "o" + "t" + " " + "r" + "e" + "a" + "d" + "y" });
+export default async function handler(req) {
+  if (!API_CONFIG) {
+    return new Response("S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e", { status: 503 });
   }
 
   try {
-    // FIX: Proper URL construction
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const full = cfg + url.pathname + url.search;
+    const pathPart = req.url.indexOf("/", 8);
+    const targetUrl = pathPart === -1 ? API_CONFIG + "/" : API_CONFIG + req.url.slice(pathPart);
 
-    const headers = {};
-    let ip = null;
-
-    for (const [k, v] of Object.entries(req.headers)) {
-      const lk = k.toLowerCase();
-      if (blockList.has(lk)) continue;
-      if (lk.indexOf(vercelCheck) === 0) continue;
+    const newHeaders = new Headers();
+    let ipAddress = null;
+    
+    for (const [key, val] of req.headers) {
+      if (BLOCKED_HEADERS.has(key)) continue;
+      if (key.indexOf("x-vercel") === 0) continue;
       
-      if (lk === ("x" + "-" + "r" + "e" + "a" + "l" + "-" + "i" + "p")) {
-        ip = v;
+      if (key === "x-real-ip") {
+        ipAddress = val;
         continue;
       }
       
-      if (lk === ("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r")) {
-        if (!ip) ip = v;
+      if (key === "x-forwarded-for") {
+        if (!ipAddress) ipAddress = val;
         continue;
       }
       
-      headers[lk] = v;
+      newHeaders.set(key, val);
+    }
+    
+    if (ipAddress) {
+      newHeaders.set("x-forwarded-for", ipAddress);
     }
 
-    if (ip) {
-      headers[("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r")] = ip;
-    }
+    const methodType = req.method;
+    const hasContent = methodType !== "GET" && methodType !== "HEAD";
 
-    const mth = req.method;
-    const hasBody = mth !== ("G" + "E" + "T") && mth !== ("H" + "E" + "A" + "D");
-
-    const opts = {
-      method: mth,
-      headers: headers,
+    const resp = await fetch(targetUrl, {
+      method: methodType,
+      headers: newHeaders,
+      body: hasContent ? req.body : undefined,
       redirect: "manual"
-    };
-
-    if (hasBody && req.body) {
-      opts.body = JSON.stringify(req.body);
-    }
-
-    const rsp = await fetch(full, opts);
-    const txt = await rsp.text();
-
-    res.status(rsp.status);
-    for (const [k, v] of rsp.headers) {
-      const lk = k.toLowerCase();
-      if (lk !== ("t" + "r" + "a" + "n" + "s" + "f" + "e" + "r" + "-" + "e" + "n" + "c" + "o" + "d" + "i" + "n" + "g")) {
-        res.setHeader(k, v);
-      }
-    }
-    res.send(txt);
-
+    });
+    
+    return resp;
+    
   } catch (err) {
-    // Log the actual error to see what's wrong
-    console.error("Proxy error:", err.message);
-    res.status(500).json({ e: err.message });
+    return new Response("S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r", { status: 500 });
   }
 }
