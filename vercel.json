@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "name": "mybeautynextapp",
-    "rewrites": [
+  "name": "javadthing",
+  "rewrites": [
     { "source": "/(.*)", "destination": "/api/index" }
   ],
   "trailingSlash": false
