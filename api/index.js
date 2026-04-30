@@ -1,75 +1,72 @@
-export const config = { runtime: "edge" };
+export const config = {
+  runtime: "edge",
+};
 
-const API_CONFIG = (process.env.API_CONFIG || "").replace(/\/$/, "");
+const TARGET_BASE = (process.env.TARGET_DOMAIN || "").replace(/\/$/, "");
 
-// Add a secret so it's NOT a completely open proxy
-const SECRET = process.env.SECRET || "";
-
-const BLOCKED_HEADERS = new Set([
-  "host", "connection", "keep-alive",
-  "proxy-authenticate", "proxy-authorization",
-  "te", "trailer", "transfer-encoding", "upgrade", "forwarded"
+const STRIP_HEADERS = new Set([
+  "host",
+  "connection",
+  "keep-alive",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+  "forwarded",
+  "x-forwarded-host",
+  "x-forwarded-proto",
+  "x-forwarded-port",
 ]);
 
 export default async function handler(req) {
-  // === Protection Layer ===
-  if (!API_CONFIG) {
-    return new Response("Service unavailable", { status: 503 });
-  }
-
-  if (!SECRET) {
-    return new Response("Service unavailable", { status: 503 });
-  }
-
-  // Check secret header (required from v2ray client)
-  const providedSecret = req.headers.get("x-secret");
-  if (providedSecret !== SECRET) {
-    return new Response("Service unavailable", { status: 503 });
+  if (!TARGET_BASE) {
+    return new Response("Misconfigured: TARGET_DOMAIN is not set", { status: 500 });
   }
 
   try {
-    const url = req.url;
-    const pathStart = url.indexOf("/", 8);
-    const targetUrl = API_CONFIG + (pathStart > 0 ? url.slice(pathStart) : "/");
+    const url = new URL(req.url);
+    const targetUrl = TARGET_BASE + url.pathname + url.search;
 
-    const newHeaders = new Headers();
-    let clientIP = null;
-
+    const headers = new Headers();
+    let clientIp = null;
     for (const [key, value] of req.headers) {
-      const lower = key.toLowerCase();
-
-      if (BLOCKED_HEADERS.has(lower)) continue;
-      if (lower.startsWith("x-vercel")) continue;
-
-      if (lower === "x-real-ip") {
-        clientIP = value;
-        continue;
-      }
-      if (lower === "x-forwarded-for") {
-        if (!clientIP) clientIP = value;
-        continue;
-      }
-
-      newHeaders.set(key, value);
+      const k = key.toLowerCase();
+      if (STRIP_HEADERS.has(k)) continue;
+      if (k.startsWith("x-vercel-")) continue;
+      if (k === "x-real-ip") { clientIp = value; continue; }
+      if (k === "x-forwarded-for") { if (!clientIp) clientIp = value; continue; }
+      headers.set(k, value);
     }
-
-    if (clientIP) {
-      newHeaders.set("x-forwarded-for", clientIP);
-    }
+    if (clientIp) headers.set("x-forwarded-for", clientIp);
 
     const method = req.method;
     const hasBody = method !== "GET" && method !== "HEAD";
 
-    const response = await fetch(targetUrl, {
+    const fetchOpts = {
       method,
-      headers: newHeaders,
-      body: hasBody ? req.body : undefined,
-      redirect: "manual"
+      headers,
+      redirect: "manual",
+    };
+    if (hasBody) {
+      fetchOpts.body = req.body;
+      fetchOpts.duplex = "half";
+    }
+
+    const upstream = await fetch(targetUrl, fetchOpts);
+
+    const respHeaders = new Headers();
+    for (const [k, v] of upstream.headers) {
+      if (k.toLowerCase() === "transfer-encoding") continue;
+      respHeaders.set(k, v);
+    }
+
+    return new Response(upstream.body, {
+      status: upstream.status,
+      headers: respHeaders,
     });
-
-    return response;
-
   } catch (err) {
-    return new Response("Service unavailable", { status: 503 });
+    return new Response("Bad Gateway: Tunnel Failed", { status: 502 });
   }
 }
