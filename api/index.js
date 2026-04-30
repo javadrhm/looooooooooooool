@@ -30,14 +30,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const p = req.url;
-    const qIdx = p.indexOf("?");
-    const basePath = qIdx === -1 ? p : p.substring(0, qIdx);
-    const qs = qIdx === -1 ? "" : p.substring(qIdx);
-    
-    const full = cfg + basePath + qs;
+    // FIX: Proper URL construction
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const full = cfg + url.pathname + url.search;
 
-    const h = {};
+    const headers = {};
     let ip = null;
 
     for (const [k, v] of Object.entries(req.headers)) {
@@ -45,29 +42,29 @@ export default async function handler(req, res) {
       if (blockList.has(lk)) continue;
       if (lk.indexOf(vercelCheck) === 0) continue;
       
-      if (lk === "x" + "-" + "r" + "e" + "a" + "l" + "-" + "i" + "p") {
+      if (lk === ("x" + "-" + "r" + "e" + "a" + "l" + "-" + "i" + "p")) {
         ip = v;
         continue;
       }
       
-      if (lk === "x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r") {
+      if (lk === ("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r")) {
         if (!ip) ip = v;
         continue;
       }
       
-      h[lk] = v;
+      headers[lk] = v;
     }
 
     if (ip) {
-      h["x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r"] = ip;
+      headers[("x" + "-" + "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d" + "-" + "f" + "o" + "r")] = ip;
     }
 
     const mth = req.method;
-    const hasBody = mth !== "G" + "E" + "T" && mth !== "H" + "E" + "A" + "D";
+    const hasBody = mth !== ("G" + "E" + "T") && mth !== ("H" + "E" + "A" + "D");
 
     const opts = {
       method: mth,
-      headers: new Headers(h),
+      headers: headers,
       redirect: "manual"
     };
 
@@ -80,13 +77,16 @@ export default async function handler(req, res) {
 
     res.status(rsp.status);
     for (const [k, v] of rsp.headers) {
-      if (k.toLowerCase() !== "t" + "r" + "a" + "n" + "s" + "f" + "e" + "r" + "-" + "e" + "n" + "c" + "o" + "d" + "i" + "n" + "g") {
+      const lk = k.toLowerCase();
+      if (lk !== ("t" + "r" + "a" + "n" + "s" + "f" + "e" + "r" + "-" + "e" + "n" + "c" + "o" + "d" + "i" + "n" + "g")) {
         res.setHeader(k, v);
       }
     }
     res.send(txt);
 
-  } catch (e) {
-    res.status(500).json({ e: "e" + "r" + "r" });
+  } catch (err) {
+    // Log the actual error to see what's wrong
+    console.error("Proxy error:", err.message);
+    res.status(500).json({ e: err.message });
   }
 }
