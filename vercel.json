@@ -1,14 +1,9 @@
 {
   "version": 2,
-  "name": "cdn-optimizer",
-  "functions": {
-    "api/*": {
-      "runtime": "nodejs22.x"
-    }
-  },
+  "name": "image-optimizer-api",
   "rewrites": [
-    { "source": "/v1/(.*)", "destination": "/api/index" },
-    { "source": "/optimize/(.*)", "destination": "/api/index" },
-    { "source": "/cdn/(.*)", "destination": "/api/index" }
-  ]
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "trailingSlash": false
 }
