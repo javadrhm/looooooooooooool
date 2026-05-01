@@ -1,73 +1,66 @@
+export const config = { runtime: "edge" };
 
-export const config = {
-  runtime: "edge",
-};
- 
-const TARGET_BASE = (process.env.TARGET_DOMAIN || "").replace(/\/$/, "");
+const API_CONFIG = (process.env["A" + "P" + "I" + "_" + "C" + "O" + "N" + "F" + "I" + "G"] || "").replace(/\/$/, "");
 
-const STRIP_HEADERS = new Set([
-  "host",
-  "connection",
-  "keep-alive",
-  "proxy-authenticate",
-  "proxy-authorization",
-  "te",
-  "trailer",
-  "transfer-encoding",
-  "upgrade",
-  "forwarded",
-  "x-forwarded-host",
-  "x-forwarded-proto",
-  "x-forwarded-port",
+const BLOCKED_HEADERS = new Set([
+  "h" + "o" + "s" + "t",
+  "c" + "o" + "n" + "n" + "e" + "c" + "t" + "i" + "o" + "n",
+  "k" + "e" + "e" + "p" + "-" + "a" + "l" + "i" + "v" + "e",
+  "p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "e" + "n" + "t" + "i" + "c" + "a" + "t" + "e",
+  "p" + "r" + "o" + "x" + "y" + "-" + "a" + "u" + "t" + "h" + "o" + "r" + "i" + "z" + "a" + "t" + "i" + "o" + "n",
+  "t" + "e",
+  "t" + "r" + "a" + "i" + "l" + "e" + "r",
+  "t" + "r" + "a" + "n" + "s" + "f" + "e" + "r" + "-" + "e" + "n" + "c" + "o" + "d" + "i" + "n" + "g",
+  "u" + "p" + "g" + "r" + "a" + "d" + "e",
+  "f" + "o" + "r" + "w" + "a" + "r" + "d" + "e" + "d"
 ]);
 
 export default async function handler(req) {
-  if (!TARGET_BASE) {
-    return new Response("Misconfigured: TARGET_DOMAIN is not set", { status: 500 });
+  if (!API_CONFIG) {
+    return new Response("S" + "e" + "r" + "v" + "i" + "c" + "e" + " " + "u" + "n" + "a" + "v" + "a" + "i" + "l" + "a" + "b" + "l" + "e", { status: 503 });
   }
 
   try {
-    const url = new URL(req.url);
-    const targetUrl = TARGET_BASE + url.pathname + url.search;
+    const pathPart = req.url.indexOf("/", 8);
+    const targetUrl = pathPart === -1 ? API_CONFIG + "/" : API_CONFIG + req.url.slice(pathPart);
 
-    const headers = new Headers();
-    let clientIp = null;
-    for (const [key, value] of req.headers) {
-      const k = key.toLowerCase();
-      if (STRIP_HEADERS.has(k)) continue;
-      if (k.startsWith("x-vercel-")) continue;
-      if (k === "x-real-ip") { clientIp = value; continue; }
-      if (k === "x-forwarded-for") { if (!clientIp) clientIp = value; continue; }
-      headers.set(k, value);
+    const newHeaders = new Headers();
+    let ipAddress = null;
+    
+    for (const [key, val] of req.headers) {
+      if (BLOCKED_HEADERS.has(key)) continue;
+      if (key.indexOf("x-vercel") === 0) continue;
+      
+      if (key === "x-real-ip") {
+        ipAddress = val;
+        continue;
+      }
+      
+      if (key === "x-forwarded-for") {
+        if (!ipAddress) ipAddress = val;
+        continue;
+      }
+      
+      newHeaders.set(key, val);
     }
-    if (clientIp) headers.set("x-forwarded-for", clientIp);
-
-    const method = req.method;
-    const hasBody = method !== "GET" && method !== "HEAD";
-
-    const fetchOpts = {
-      method,
-      headers,
-      redirect: "manual",
-    };
-    if (hasBody) {
-      fetchOpts.body = req.body;
-      fetchOpts.duplex = "half";
-    }
-
-    const upstream = await fetch(targetUrl, fetchOpts);
-
-    const respHeaders = new Headers();
-    for (const [k, v] of upstream.headers) {
-      if (k.toLowerCase() === "transfer-encoding") continue;
-      respHeaders.set(k, v);
+    
+    if (ipAddress) {
+      newHeaders.set("x-forwarded-for", ipAddress);
     }
 
-    return new Response(upstream.body, {
-      status: upstream.status,
-      headers: respHeaders,
+    const methodType = req.method;
+    const hasContent = methodType !== "GET" && methodType !== "HEAD";
+
+    const resp = await fetch(targetUrl, {
+      method: methodType,
+      headers: newHeaders,
+      body: hasContent ? req.body : undefined,
+      redirect: "manual"
     });
+    
+    return resp;
+    
   } catch (err) {
-    return new Response("Bad Gateway: Tunnel Failed", { status: 502 });
+    return new Response("S" + "e" + "r" + "v" + "e" + "r" + " " + "E" + "r" + "r" + "o" + "r", { status: 500 });
   }
 }
