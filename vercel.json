@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "testnext",
+  "name": "imagerecognition-verc",
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index" }
   ],
