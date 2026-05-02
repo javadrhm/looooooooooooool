@@ -1,7 +1,7 @@
 {
-  "name": "testnext",
-  "version": "1.0.0",
-  "description": "testnext",
+  "name": "imagerecognition-verc",
+  "version": "1.2.0",
+  "description": "imagerecognition-verc",
   "private": true,
   "license": "MIT"
 }
